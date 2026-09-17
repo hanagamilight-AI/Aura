@@ -19,9 +19,13 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # Ollama (Local LLM)
-    OLLAMA_HOST: str = "http://localhost:11434"
+    # Ollama Configuration (Local or Cloud)
+    # For local: http://localhost:11434
+    # For cloud: https://api.ollama.cloud
+    OLLAMA_HOST: str = "https://api.ollama.cloud"
     OLLAMA_MODEL: str = "qwen2.5:14b"
+    OLLAMA_API_KEY: Optional[str] = None  # Required for Ollama Cloud
+    USE_OLLAMA_CLOUD: bool = True  # Set to False for local Ollama
 
     # Telegram
     TELEGRAM_BOT_TOKEN: Optional[str] = None

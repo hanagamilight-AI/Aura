@@ -1,5 +1,6 @@
 """
-LLM client setup using Ollama (local LLM).
+LLM client setup using Ollama (Local or Cloud).
+Supports both local Ollama instances and Ollama Cloud API.
 """
 from langchain_ollama import ChatOllama
 from typing import Optional
@@ -19,10 +20,16 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.7):
     """
     model_name = model or settings.OLLAMA_MODEL
     
+    # Prepare headers for authentication if using Ollama Cloud
+    headers = {}
+    if settings.USE_OLLAMA_CLOUD and settings.OLLAMA_API_KEY:
+        headers["Authorization"] = f"Bearer {settings.OLLAMA_API_KEY}"
+    
     return ChatOllama(
         model=model_name,
         base_url=settings.OLLAMA_HOST,
         temperature=temperature,
+        headers=headers if headers else None,
     )
 
 

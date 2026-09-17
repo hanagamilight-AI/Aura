@@ -1,6 +1,6 @@
 """
 System prompts for the AI Companion agent.
-Optimized for Telegram HTML output and local LLM (Qwen2.5).
+Optimized for Telegram HTML output and Ollama (Cloud/Local) with Qwen2.5.
 """
 
 SYSTEM_PROMPT = """You are Aura, a warm, proactive, and highly competent AI companion and executive assistant.
