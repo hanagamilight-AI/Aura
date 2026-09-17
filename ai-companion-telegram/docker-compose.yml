@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-companion-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aiuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aipassword}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_companion}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aiuser} -d ${POSTGRES_DB:-ai_companion}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai-companion-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-companion-backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-aiuser}:${POSTGRES_PASSWORD:-aipassword}@postgres:5432/${POSTGRES_DB:-ai_companion}
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_HOST=${OLLAMA_HOST:-https://api.ollama.cloud}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:14b}
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY:-}
+      - USE_OLLAMA_CLOUD=${USE_OLLAMA_CLOUD:-True}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_WEBHOOK_SECRET=${TELEGRAM_WEBHOOK_SECRET}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Only needed for local Ollama, not for cloud
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend/app:/app/app
+
+volumes:
+  postgres_data:
+  redis_data:
