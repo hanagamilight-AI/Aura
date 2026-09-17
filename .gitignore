@@ -29,3 +29,4 @@ Thumbs.db
 .dockerignore
 ```node_modules/
 .next/
+node_modules/
