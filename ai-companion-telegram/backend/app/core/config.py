@@ -3,7 +3,7 @@ Core configuration settings for the AI Companion application.
 Loads environment variables and provides type-safe access.
 """
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Literal
 import os
 
 
@@ -19,13 +19,19 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # LLM Provider Selection: 'ollama', 'ollama_cloud', or 'groq'
+    LLM_PROVIDER: Literal["ollama", "ollama_cloud", "groq"] = "ollama"
+
     # Ollama Configuration (Local or Cloud)
     # For local: http://localhost:11434
     # For cloud: https://api.ollama.cloud
-    OLLAMA_HOST: str = "https://api.ollama.cloud"
+    OLLAMA_HOST: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen2.5:14b"
     OLLAMA_API_KEY: Optional[str] = None  # Required for Ollama Cloud
-    USE_OLLAMA_CLOUD: bool = True  # Set to False for local Ollama
+    
+    # Groq Configuration
+    GROQ_API_KEY: Optional[str] = None
+    GROQ_MODEL: str = "llama-3.1-70b-versatile"  # Default powerful free-tier model
 
     # Telegram
     TELEGRAM_BOT_TOKEN: Optional[str] = None

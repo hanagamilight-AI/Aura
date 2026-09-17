@@ -1,6 +1,6 @@
-# AI Companion & Assistant (Telegram Bot + Ollama Cloud/Local LLM)
+# AI Companion & Assistant (Telegram Bot + Multi-Provider LLM)
 
-A stateful AI Agent that acts as a personal companion and executive assistant, accessed entirely through **Telegram**. It runs on **Ollama** (Cloud or Local) with Qwen2.5 for privacy and flexibility.
+A stateful AI Agent that acts as a personal companion and executive assistant, accessed entirely through **Telegram**. It supports multiple LLM providers: **Ollama (Local/Cloud)** with Qwen2.5 or **Groq** with Llama 3.1 for privacy, flexibility, and free-tier deployment options.
 
 ## 🌟 Core Capabilities
 
@@ -49,31 +49,32 @@ A stateful AI Agent that acts as a personal companion and executive assistant, a
 │              ▼                     ▼                     ▼            │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
 │  │   Tools Layer    │  │   Memory Layer   │  │   LLM Layer      │    │
-│  │  - Web Search    │  │  - pgvector      │  │  - Ollama Cloud  │    │
-│  │  - Todo Mgmt     │  │  - Conversation  │  │    or Local      │    │
-│  │  - Reminders     │  │    History       │  │  - Qwen2.5       │    │
+│  │  - Web Search    │  │  - pgvector      │  │  - Ollama        │    │
+│  │  - Todo Mgmt     │  │  - Conversation  │  │    (Local/Cloud) │    │
+│  │  - Reminders     │  │    History       │  │  - Groq          │    │
 │  └──────────────────┘  └──────────────────┘  └──────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────┘
          │                    │                    │
          │                    │                    │
          ▼                    ▼                    ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐
-│   PostgreSQL    │  │     Redis       │  │   Ollama (Cloud/Local)  │
-│   + pgvector    │  │   (Celery)      │  │   - Qwen2.5:14b/32b     │
-│   - User Data   │  │   - Task Queue  │  │   - Tool Calling        │
-│   - Todos       │  │   - Reminders   │  │   - Streaming           │
-│   - Memories    │  │                 │  │                         │
-└─────────────────┘  └─────────────────┘  └─────────────────────────┘
-         │
-         │
-         ▼
-┌─────────────────┐
-│  External APIs  │
-│  - Tavily       │
-│  (Web Search)   │
-└─────────────────┘
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│   PostgreSQL     │  │     Redis        │  │   LLM Providers          │
+│   + pgvector     │  │   (Celery)       │  │  ┌────────────────────┐  │
+│   - User Data    │  │   - Task Queue   │  │  │ Ollama Local       │  │
+│   - Todos        │  │   - Reminders    │  │  │ (qwen2.5:14b/32b)  │  │
+│   - Memories     │  │                  │  │  ├────────────────────┤  │
+└──────────────────┘  └──────────────────┘  │  │ Ollama Cloud       │  │
+         │                                  │  │ (qwen2.5:14b)      │  │
+         │                                  │  ├────────────────────┤  │
+         ▼                                  │  │ Groq               │  │
+┌──────────────────┐                       │  │ (llama-3.1-70b)    │  │
+│  External APIs   │                       │  └────────────────────┘  │
+│  - Tavily        │                       │                          │
+│  (Web Search)    │                       └──────────────────────────┘
+└──────────────────┘
 ```
 
+---
 ---
 
 ## 📁 Project Structure
@@ -168,15 +169,15 @@ Edit `backend/.env`:
 
 #### For Ollama Cloud (Recommended):
 ```env
-USE_OLLAMA_CLOUD=True
+LLM_PROVIDER=True
 OLLAMA_HOST=https://api.ollama.cloud
 OLLAMA_MODEL=qwen2.5:14b
-OLLAMA_API_KEY=your_ollama_cloud_api_key_here
+OLLAMA_API_KEY=your_ollama-cloud_api_key_here
 ```
 
 #### For Local Ollama:
 ```env
-USE_OLLAMA_CLOUD=False
+LLM_PROVIDER=False
 OLLAMA_HOST=http://host.docker.internal:11434
 OLLAMA_MODEL=qwen2.5:14b
 OLLAMA_API_KEY=
@@ -359,24 +360,32 @@ CREATE TABLE conversations (
 
 ## 🔧 Configuration Options
 
-### Ollama Configuration
+### LLM Provider Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `USE_OLLAMA_CLOUD` | `True` | Toggle between cloud and local |
-| `OLLAMA_HOST` | `https://api.ollama.cloud` | Ollama endpoint URL |
-| `OLLAMA_MODEL` | `qwen2.5:14b` | Model to use |
+| `LLM_PROVIDER` | `ollama` | Provider: 'ollama', 'ollama_cloud', or 'groq' |
+| `OLLAMA_HOST` | `http://localhost:11434` | Ollama endpoint URL |
+| `OLLAMA_MODEL` | `qwen2.5:14b` | Model to use for Ollama |
 | `OLLAMA_API_KEY` | `None` | API key for Ollama Cloud |
+| `GROQ_API_KEY` | `None` | API key for Groq Cloud |
+| `GROQ_MODEL` | `llama-3.1-70b-versatile` | Model to use for Groq |
 
 ### Model Recommendations
 
+#### For Local Ollama:
 | Hardware | Recommended Model |
 |----------|------------------|
-| < 16GB RAM | qwen2.5:7b (local) or any cloud model |
+| < 16GB RAM | qwen2.5:7b |
 | 16-32GB RAM | qwen2.5:14b |
 | 32-64GB RAM | qwen2.5:32b |
 | 64GB+ RAM | qwen2.5:72b |
 
+#### For Cloud Providers:
+| Provider | Recommended Model | Notes |
+|----------|------------------|-------|
+| Groq | llama-3.1-70b-versatile | Best free tier, 128K context |
+| Ollama Cloud | qwen2.5:14b | Good balance of speed/quality |
 ---
 
 ## 📡 API Endpoints
