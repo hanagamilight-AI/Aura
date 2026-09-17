@@ -1,5 +1,31 @@
-node_modules/
-.next/
-dist/
+```
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv/
+.env
+.env.local
+.env.*
+
+# Build and distribution artifacts
 build/
+dist/
+*.egg-info/
+
+# Logs
 *.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+```node_modules/
+.next/
